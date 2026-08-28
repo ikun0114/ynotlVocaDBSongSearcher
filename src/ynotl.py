@@ -118,14 +118,14 @@ def write_song_files(response_obj: dict, media_file: mutagen.FileType,
         media_file['album'] = [i['name'] for i in response_obj['albums']]
         if 'album_separator' in CONFIG:
             media_file['album'] = [CONFIG['album_separator'].join(media_file['album'])]
-    elif 'album' in media_file:
-        media_file.delete('album')
+    else:
+        media_file.pop('album', None)
     media_file['date'] = [response_obj['publishDate']]
     media_file['comment'] = [f'Vocadb ID: {response_obj['id']}, song type: {response_obj['songType']}']
     if 'minMilliBpm' in response_obj:
         media_file['bpm'] = [round((response_obj['minMilliBpm'] + response_obj['maxMilliBpm']) * .0005)]
-    elif 'bpm' in media_file:
-        media_file.delete('bpm')
+    else:
+        media_file.pop('bpm', None)
     if response_obj['lyrics']: open(lyrics_file_path, 'w', encoding='utf-8').write(response_obj['lyrics'][0]['value'])
     return {
         'id': response_obj['id'],
