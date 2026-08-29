@@ -46,6 +46,7 @@ class Configure(TypedDict):
     search_length_offset: NotRequired[int]
     artist_separator: NotRequired[str]
     album_separator: NotRequired[str]
+    lyrics_lang: NotRequired[str]
 
 
 class DateString:
@@ -126,7 +127,18 @@ def write_song_files(response_obj: dict, media_file: mutagen.FileType,
         media_file['bpm'] = [round((response_obj['minMilliBpm'] + response_obj['maxMilliBpm']) * .0005)]
     else:
         media_file.pop('bpm', None)
-    if response_obj['lyrics']: open(lyrics_file_path, 'w', encoding='utf-8').write(response_obj['lyrics'][0]['value'])
+    if response_obj['lyrics']:
+        lyrics = response_obj['lyrics'][0]['value']
+        for i in response_obj['lyrics']:
+            if 'lyrics_lang' in CONFIG:
+                if CONFIG['lyrics_lang'] in i['cultureCodes']:
+                    lyrics = i['value']
+                    break
+            else:
+                if i['translationType'] == 'Original':
+                    lyrics = i['value']
+                    break
+        open(lyrics_file_path, 'w', encoding='utf-8').write(lyrics)
     return {
         'id': response_obj['id'],
         'time': DateString.dump(datetime.datetime.now())
